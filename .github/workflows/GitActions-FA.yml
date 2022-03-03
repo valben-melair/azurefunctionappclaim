@@ -114,101 +114,101 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.OUTPUT_PATH }}
 
-  deploy-to-dev:
-    name: Deploy to DEV
-    needs: [build]
-    runs-on: ubuntu-latest
-    env:
-      FUNC_APP_NAME: claim-files-threat-detection-dv
+  #deploy-to-dev:
+  #  name: Deploy to DEV
+  #  needs: [build]
+  #  runs-on: ubuntu-latest
+  #  env:
+  #    FUNC_APP_NAME: claim-files-threat-detection-dv
 
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v1
-        with:
-            name: ${{ env.ARTIFACT_NAME }}
-            path: ${{ env.OUTPUT_PATH }}
+  #  steps:
+  #    - name: Download Artifact
+  #      uses: actions/download-artifact@v1
+  #      with:
+  #          name: ${{ env.ARTIFACT_NAME }}
+  #          path: ${{ env.OUTPUT_PATH }}
 
-      - name: "Login via Azure CLI to DEV"
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS_DEV }}
+  #    - name: "Login via Azure CLI to DEV"
+  #      uses: azure/login@v1
+  #      with:
+  #        creds: ${{ secrets.AZURE_CREDENTIALS_DEV }}
 
-      - name: Deploy to Azure to DEV
-        id: deploy-to-azure
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ env.FUNC_APP_NAME }}
-          package: ${{ env.OUTPUT_PATH }}
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_DEV }}
+  #    - name: Deploy to Azure to DEV
+  #      id: deploy-to-azure
+  #      uses: Azure/functions-action@v1
+  #      with:
+  #        app-name: ${{ env.FUNC_APP_NAME }}
+  #        package: ${{ env.OUTPUT_PATH }}
+  #        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_DEV }}
 
-      - name: Log Out From Azure
-        run: az logout
+  #    - name: Log Out From Azure
+  #      run: az logout
 
-  deploy-to-nonproduction:
-    name: Deploy to NonProd
-    needs: deploy-to-dev
-    runs-on: ubuntu-latest
-    env:
-      FUNC_APP_NAME: claim-files-threat-detection-np
+  #deploy-to-nonproduction:
+  #  name: Deploy to NonProd
+  #  needs: deploy-to-dev
+  #  runs-on: ubuntu-latest
+  #  env:
+  #    FUNC_APP_NAME: claim-files-threat-detection-np
 
-    environment:
-      name: DEPLOY_NONPROD
+  #  environment:
+  #    name: DEPLOY_NONPROD
 
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v1
-        with:
-            name: ${{ env.ARTIFACT_NAME }}
-            path: ${{ env.OUTPUT_PATH }}
+  #  steps:
+  #    - name: Download Artifact
+  #      uses: actions/download-artifact@v1
+  #      with:
+  #          name: ${{ env.ARTIFACT_NAME }}
+  #          path: ${{ env.OUTPUT_PATH }}
 
-      - name: "Login via Azure CLI to NONProd"
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS_NONPROD }}
+  #    - name: "Login via Azure CLI to NONProd"
+  #      uses: azure/login@v1
+  #      with:
+  #        creds: ${{ secrets.AZURE_CREDENTIALS_NONPROD }}
 
-      - name: Deploy to Azure to NONPROD
-        id: deploy-to-azure
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ env.FUNC_APP_NAME }}
-          package: ${{ env.OUTPUT_PATH }}
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_NONPROD }}
-
-          
-      - name: Log Out From Azure
-        run: az logout
-
-  deploy-to-production:
-    name: Deploy to Production
-    needs: deploy-to-nonproduction
-    runs-on: ubuntu-latest
-
-    env:
-      FUNC_APP_NAME: claim-files-threat-detection-pr
-
-    environment:
-      name: DEPLOY_PROD
-
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v1
-        with:
-            name: ${{ env.ARTIFACT_NAME }}
-            path: ${{ env.OUTPUT_PATH }}
-
-      - name: "Login via Azure CLI to Prod"
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
-
-      - name: Deploy to Azure to PROD
-        id: deploy-to-azure
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ env.FUNC_APP_NAME }}
-          package: ${{ env.OUTPUT_PATH }}
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PROD }}
+  #    - name: Deploy to Azure to NONPROD
+  #      id: deploy-to-azure
+  #      uses: Azure/functions-action@v1
+  #      with:
+  #        app-name: ${{ env.FUNC_APP_NAME }}
+  #        package: ${{ env.OUTPUT_PATH }}
+  #        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_NONPROD }}
 
           
-      - name: Log Out From Azure
-        run: az logout
+  #    - name: Log Out From Azure
+  #      run: az logout
+
+  #deploy-to-production:
+  #  name: Deploy to Production
+  #  needs: deploy-to-nonproduction
+  #  runs-on: ubuntu-latest
+
+  #  env:
+  #    FUNC_APP_NAME: claim-files-threat-detection-pr
+
+  #  environment:
+  #    name: DEPLOY_PROD
+
+  #  steps:
+  #    - name: Download Artifact
+  #      uses: actions/download-artifact@v1
+  #      with:
+  #          name: ${{ env.ARTIFACT_NAME }}
+  #          path: ${{ env.OUTPUT_PATH }}
+
+  #    - name: "Login via Azure CLI to Prod"
+  #      uses: azure/login@v1
+  #      with:
+  #        creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+  #    - name: Deploy to Azure to PROD
+  #      id: deploy-to-azure
+  #      uses: Azure/functions-action@v1
+  #      with:
+  #        app-name: ${{ env.FUNC_APP_NAME }}
+  #        package: ${{ env.OUTPUT_PATH }}
+  #        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PROD }}
+
+          
+  #    - name: Log Out From Azure
+  #      run: az logout
