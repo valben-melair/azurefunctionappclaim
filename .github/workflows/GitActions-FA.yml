@@ -1,0 +1,205 @@
+name: CICD-Pipeline-FA
+on:
+  push:
+    branches:
+    - master
+  workflow_dispatch:
+
+env:
+  buildConfiguration: 'Release'
+  # Azure Resource Manager connection created during pipeline creation
+  #prodAzureSubscription: 'FMG Application Integration Production (6616f88d-b95d-4a2a-9a4b-d8f077109a53)'
+  #preprodAzureSubscription: 'FMG Application Integration Non Production (fa400d27-a461-4c49-b43e-f7f143d8adf1)'
+  prodAzureSubscription: 'FMG Application Integration Development (0e70bfc1-52f6-4131-b55c-36a1c0db8598)'
+  preprodAzureSubscription: 'FMG Application Integration Development (0e70bfc1-52f6-4131-b55c-36a1c0db8598)'
+  devAzureSubscription: 'FMG Application Integration Development (0e70bfc1-52f6-4131-b55c-36a1c0db8598)'
+  #prodAzureSubscription: 'Chris21'
+  #preprodAzureSubscription: 'Chris21'
+  #devAzureSubscription: 'Chris21'
+
+    # Azure subscription ID
+  #prodAzureSubscriptionId: '6616f88d-b95d-4a2a-9a4b-d8f077109a53'
+  #preprodAzureSubscriptionId: 'fa400d27-a461-4c49-b43e-f7f143d8adf1'
+  prodAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  preprodAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  devAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  #prodAzureSubscriptionId: '1180c2d1-2551-4748-9b42-588fcc6a16bf' 
+  #preprodAzureSubscriptionId: '1180c2d1-2551-4748-9b42-588fcc6a16bf'
+  #devAzureSubscriptionId: '1180c2d1-2551-4748-9b42-588fcc6a16bf'
+
+  prodResourceGroup: 'fzanzaiprgp003'
+  preprodResourceGroup: 'fzanzainprgp003'
+  #devResourceGroup: 'fzanzaidvrgp003'
+  devResourceGroup: 'fzanzaidvrgp003'
+
+  OUTPUT_PATH: ${{ github.workspace }}/.output
+  ARTIFACT_NAME: 'function-app-package'
+  DOTNET_VERSION: '3.1'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v2
+
+      - name: Setup Dotnet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Report generator setup
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Create Azure Function Artifact
+        run: |
+           dotnet publish ./fmgclaimfilethreatdetection --configuration Release --output ${{ env.OUTPUT_PATH }}
+
+      - name: Unit Tests and collect coverage
+        run: |
+            dotnet test  ClaimFilesThreatDetection.sln --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+            #dir ./fmgclaimfilethreatdetection
+            #dir ./fmgclaimfilethreatdetection/UnitTests
+            #dir ./fmgclaimfilethreatdetection/UnitTests/TestResults
+            #cd fmgclaimfilethreatdetection\UnitTests
+            #cd TestResults
+            #$dirList = Get-ChildItem -Directory -Name -attributes D -Recurse
+            #cd $dirList
+            #dir
+            #echo "./fmgclaimfilethreatdetection/UnitTests/TestResults/$dirList/coverage.cobertura.xml"
+            #echo "./fmgclaimfilethreatdetection/UnitTests/TestResults/$dirList/coverage.cobertura.xml" > TestFolderName
+
+      #- name: Upload Coverage to Codecov
+      #  uses: codecov/codecov-action@v1
+      #  with:
+      #    file: "${{env.TestFolderName}}"
+
+        # Execute report generator
+      - name: Execute report generator
+        run: |
+            $curDir = Get-Location
+            cd fmgclaimfilethreatdetection\UnitTests
+            cd TestResults
+            $dirList = Get-ChildItem -Directory -Name -attributes D -Recurse
+            cd $dirList
+            $nmspc = "fmgclaimfilethreatdetection"
+            $ExcludeList = "-" + $nmspc + ".App"
+            $ExcludeList += ";-" + $nmspc + ".Models.MessageBoxWrapper"
+            $ExcludeList += ";-" + $nmspc + ".Services.Run.RunDialog"
+            reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:Badges "-classfilters:$ExcludeList"
+            reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:Html "-classfilters:$ExcludeList"
+            cd coveragereport
+            copy badge_linecoverage.svg $curDir
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+           name: artifacts
+           path: fmgclaimfilethreatdetection\\UnitTests\\TestResults
+           retention-days: 30
+
+      - name: Publish Azure Function Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.OUTPUT_PATH }}
+
+  deploy-to-dev:
+    name: Deploy to DEV
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      FUNC_APP_NAME: claim-files-threat-detection-dv
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v1
+        with:
+            name: ${{ env.ARTIFACT_NAME }}
+            path: ${{ env.OUTPUT_PATH }}
+
+      - name: "Login via Azure CLI to DEV"
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_DEV }}
+
+      - name: Deploy to Azure to DEV
+        id: deploy-to-azure
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNC_APP_NAME }}
+          package: ${{ env.OUTPUT_PATH }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_DEV }}
+
+      - name: Log Out From Azure
+        run: az logout
+
+  deploy-to-nonproduction:
+    name: Deploy to NonProd
+    needs: deploy-to-dev
+    runs-on: ubuntu-latest
+    env:
+      FUNC_APP_NAME: claim-files-threat-detection-np
+
+    environment:
+      name: DEPLOY_NONPROD
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v1
+        with:
+            name: ${{ env.ARTIFACT_NAME }}
+            path: ${{ env.OUTPUT_PATH }}
+
+      - name: "Login via Azure CLI to NONProd"
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_NONPROD }}
+
+      - name: Deploy to Azure to NONPROD
+        id: deploy-to-azure
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNC_APP_NAME }}
+          package: ${{ env.OUTPUT_PATH }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_NONPROD }}
+
+          
+      - name: Log Out From Azure
+        run: az logout
+
+  deploy-to-production:
+    name: Deploy to Production
+    needs: deploy-to-nonproduction
+    runs-on: ubuntu-latest
+
+    env:
+      FUNC_APP_NAME: claim-files-threat-detection-pr
+
+    environment:
+      name: DEPLOY_PROD
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v1
+        with:
+            name: ${{ env.ARTIFACT_NAME }}
+            path: ${{ env.OUTPUT_PATH }}
+
+      - name: "Login via Azure CLI to Prod"
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Deploy to Azure to PROD
+        id: deploy-to-azure
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNC_APP_NAME }}
+          package: ${{ env.OUTPUT_PATH }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PROD }}
+
+          
+      - name: Log Out From Azure
+        run: az logout

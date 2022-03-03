@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ApimServiceName": {
+      "type": "string"
+    },
+    "APIServiceUrl": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "properties": {
+        "description": "Opswat API",
+        "authenticationSettings": {
+          "subscriptionKeyRequired": false
+        },
+        "subscriptionKeyParameterNames": {
+          "header": "Ocp-Apim-Subscription-Key",
+          "query": "subscription-key"
+        },
+        "apiRevision": "1",
+        "isCurrent": true,
+        "subscriptionRequired": true,
+        "displayName": "OPSWAT APIs",
+        "serviceUrl": "[parameters('APIServiceUrl')]",
+        "path": "opswat",
+        "protocols": [
+          "https"
+        ]
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/post-opswat-analyze-file')]",
+      "type": "Microsoft.ApiManagement/service/apis",
+      "apiVersion": "2021-01-01-preview",
+      "dependsOn": []
+    },
+    {
+      "properties": {
+        "templateParameters": [
+          {
+            "name": "id",
+            "type": "",
+            "required": true,
+            "values": []
+          }
+        ],
+        "description": "",
+        "request": {
+          "queryParameters": [],
+          "headers": [
+            {
+              "name": "apikey",
+              "type": "string",
+              "required": false,
+              "values": []
+            },
+            {
+              "name": "x-file-metadata",
+              "type": "string",
+              "required": false,
+              "values": [
+                "1"
+              ]
+            }
+          ],
+          "representations": []
+        },
+        "responses": [
+          {
+            "statusCode": 200,
+            "description": "",
+            "headers": [],
+            "representations": []
+          }
+        ],
+        "displayName": "Get analysis result",
+        "method": "GET",
+        "urlTemplate": "/file/{id}"
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/post-opswat-analyze-file/get-analysis-result')]",
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-01-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('ApimServiceName'), 'post-opswat-analyze-file')]"
+      ]
+    },
+    {
+      "properties": {
+        "templateParameters": [],
+        "description": "",
+        "request": {
+          "queryParameters": [],
+          "headers": [
+            {
+              "name": "Content-Type",
+              "type": "string",
+              "required": false,
+              "values": [
+                "application/octet-stream"
+              ]
+            },
+            {
+              "name": "apikey",
+              "type": "string",
+              "required": false,
+              "values": []
+            }
+          ],
+          "representations": []
+        },
+        "responses": [
+          {
+            "statusCode": 200,
+            "description": "",
+            "headers": [],
+            "representations": []
+          }
+        ],
+        "displayName": "Post analyze files",
+        "method": "POST",
+        "urlTemplate": "/file"
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/post-opswat-analyze-file/post-analyze-files')]",
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-01-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('ApimServiceName'), 'post-opswat-analyze-file')]"
+      ]
+    }
+  ]
+}

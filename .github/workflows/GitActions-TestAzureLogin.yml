@@ -1,0 +1,59 @@
+name: CICD-Pipeline-TestAzureLogin
+on:
+  push:
+    branches:
+    - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Login via Azure CLI to Dev"
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_DEV }}
+
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+            azcliversion: 2.30.0
+            inlineScript: |
+              az account show
+              az storage -h
+                    
+      - name: Log Out From Azure
+        run: az logout
+
+      - name: "Login via Azure CLI to NON Prod"
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_NONPROD }}
+
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+            azcliversion: 2.30.0
+            inlineScript: |
+              az account show
+              az storage -h
+                    
+      - name: Log Out From Azure
+        run: az logout
+
+      - name: "Login via Azure CLI to Prod"
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+            azcliversion: 2.30.0
+            inlineScript: |
+              az account show
+              az storage -h
+                    
+      - name: Log Out From Azure
+        run: az logout

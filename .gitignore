@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/ClaimFileUpload/v16
+/.vs
+/fmgclaimfilethreatdetection/Properties
+/.output
+/APIMEndpoints/bin/Debug/staging/APIMEndpoints
+/APIMEndpoints/obj/Debug

@@ -1,0 +1,239 @@
+name: CICD-Pipeline-APIM
+on:
+  push:
+    branches:
+    - master
+  workflow_dispatch:
+
+env:
+  buildConfiguration: 'Release'
+  # Azure Resource Manager connection created during pipeline creation
+  #prodAzureSubscription: 'FMG Application Integration Production (6616f88d-b95d-4a2a-9a4b-d8f077109a53)'
+  #preprodAzureSubscription: 'FMG Application Integration Non Production (fa400d27-a461-4c49-b43e-f7f143d8adf1)'
+  #prodAzureSubscription: 'FMG Application Integration Development (0e70bfc1-52f6-4131-b55c-36a1c0db8598)'
+  #preprodAzureSubscription: 'FMG Application Integration Development (0e70bfc1-52f6-4131-b55c-36a1c0db8598)'
+  #devAzureSubscription: 'FMG Application Integration Development (0e70bfc1-52f6-4131-b55c-36a1c0db8598)'
+  prodAzureSubscription: 'Chris21'
+  preprodAzureSubscription: 'Chris21'
+  devAzureSubscription: 'Chris21'
+
+    # Azure subscription ID
+  #prodAzureSubscriptionId: '6616f88d-b95d-4a2a-9a4b-d8f077109a53'
+  #preprodAzureSubscriptionId: 'fa400d27-a461-4c49-b43e-f7f143d8adf1'
+  #prodAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  #preprodAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  #devAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  prodAzureSubscriptionId: '1180c2d1-2551-4748-9b42-588fcc6a16bf'
+  preprodAzureSubscriptionId: '1180c2d1-2551-4748-9b42-588fcc6a16bf'
+  devAzureSubscriptionId: '1180c2d1-2551-4748-9b42-588fcc6a16bf'
+
+  # Resource Group name
+  prodResourceGroup: 'fzanzaipdrgp002'
+  preprodResourceGroup: 'fzanzainprgp002'
+  #prodResourceGroup: 'fzanzaidvrgp002'
+  #preprodResourceGroup: 'fzanzaidvrgp002'
+  devResourceGroup: 'fzanzaidvrgp002'
+
+  # APIM Endpoints
+  ARMTEMPLATE_PRODUCT : ./APIMEndpoints/fmg-apim002-opswat-api.template.json
+  PARAMETERSFILEPRODUCT_DEV: ./APIMEndpoints/fmg-apim002-opswat-parameters.DEV.json
+  PARAMETERSFILEPRODUCT_NONPROD: ./APIMEndpoints/fmg-apim002-opswat-parameters.NONPROD.json
+  PARAMETERSFILEPRODUCT_PROD: ./APIMEndpoints/fmg-apim002-opswat-parameters.PROD.json
+  
+  POSTMANCOLLECTIONLOCATION: ./TestCall/logicapps-cicd.postman_collection.json
+  POSTMANENVIRONMENTFILELOCATION : ./TestCall/logicapps-cicd-env.postman_environment.json
+
+jobs:
+  quality-check-arm-template:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout from Repository
+      uses: actions/checkout@v2
+
+    - name : Perform ARM Product Template Tests
+      id: armtemplatetests1
+      uses: aliencube/arm-ttk-actions@v0.3
+      with:
+            path: ${{env.ARMTEMPLATE_PRODUCT}}
+            skips: '"Template Should Not Contain Blanks", "Outputs Must Not Contain Secrets", "ResourceIds should not contain"'
+        
+    - name: Create Directory For Results
+      run: mkdir -p armttkresults
+
+    - name: Create Test Results JSON of Product
+      run: echo '${{ toJSON(fromJSON(steps.armtemplatetests1.outputs.results))}}' > armttkresults/Results_ArmTTK.json
+          
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v2
+      with:
+          name: Results_ArmTTK_Report
+          path: armttkresults
+
+  run-integration-tests:
+    name: Deploy to DEV
+    needs: quality-check-arm-template
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Log In To Azure
+        uses: Azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS_DEV}}
+
+      - name: Validate Deployment of APIM ARM Template to DEV
+        shell: bash
+        run: |
+         az deployment group validate \
+         --resource-group ${{env.devResourceGroup}} \
+         --mode Incremental \
+         --template-file ${{env.ARMTEMPLATE_PRODUCT}} \
+         --parameters ${{env.PARAMETERSFILEPRODUCT_DEV}}
+
+      - name: Deploy APIM ARM Template to DEV
+        shell: bash
+        run: |
+          echo "LOGICAPPURL1=$(az deployment group create \
+          -g ${{env.devResourceGroup}} \
+          --template-file ${{env.ARMTEMPLATE_PRODUCT}} \
+          --parameters ${{env.PARAMETERSFILEPRODUCT_DEV}} \
+          --query 'properties.outputs.logicAppUrl.value' -o tsv)" >> $GITHUB_ENV
+                
+
+      - name: Log Out From Azure
+        run: az logout
+
+      #- name: Install node
+      #  uses: actions/setup-node@v2.1.4
+      #  with:
+      #    node-version: '12.x'
+      
+      #- name: Install Newman
+      #  shell: bash
+      #  run: |
+      #    npm install -g newman
+      #    npm install -g newman-reporter-htmlextra
+
+      #- name: Make Directory for results
+      #  run: mkdir -p testResults
+      
+      #- name: Run Post Collection for GetAllStatement
+      #  shell: bash
+      #  run: |
+      #    ls  -l
+      #    newman run ${{env.POSTMANCOLLECTIONLOCATION}} -e ${{env.POSTMANENVIRONMENTFILELOCATION}} --env-var "url=${{env.LOGICAPPURL1}}" \
+      #    -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html \
+      #    --reporter-htmlextra-darkTheme  > testResults/runreport1.html
+      #    echo $?
+
+      #- name: Run Post Collection for RetrieveDocument
+      #  shell: bash
+      #  run: |
+      #    newman run ${{env.POSTMANCOLLECTIONLOCATION}} -e ${{env.POSTMANENVIRONMENTFILELOCATION}} --env-var "url=${{env.LOGICAPPURL2}}" \
+      #    -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html \
+      #    --reporter-htmlextra-darkTheme  > testResults/runreport2.html
+
+      #- name: Upload Results
+      #  uses: actions/upload-artifact@v2
+      #  with: 
+      #    name: RunReports
+      #    path: testResults
+
+  #create-pull-request:
+  #  needs: quality-check-arm-template
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - name: Create a Pull request
+  #      uses: repo-sync/pull-request@v2
+  #      with: 
+  #        destination_branch: "main"                      
+  #        pr_title: "Pulling ${{ github.ref }} into master" 
+  #        pr_body: ":robot: *Integration bot raised the PR*"
+  #        pr_reviewer: "valbengalon"                         
+  #        pr_assignee: "valbengalon"                 
+  #        pr_label: "autopr"                              
+  #        pr_draft: false                                  
+  #        pr_allow_empty: false                            
+  #        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-to-nonproduction:
+    name: Deploy to NonProd
+    needs: run-integration-tests
+    runs-on: ubuntu-latest
+
+    environment:
+      name: DEPLOY_NONPROD
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Log In To Azure
+        uses: Azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS_NONPROD}}
+      
+      - name: Validate Deployment of APIM ARM Template to NonProd
+        shell: bash
+        run: |
+         az deployment group validate \
+         --resource-group ${{env.preprodResourceGroup}} \
+         --mode Incremental \
+         --template-file ${{env.ARMTEMPLATE_PRODUCT}} \
+         --parameters ${{env.PARAMETERSFILEPRODUCT_NONPROD}}
+
+      - name: Deploy APIM ARM Template to NonProd
+        shell: bash
+        run: |
+          echo "LOGICAPPURL1=$(az deployment group create \
+          -g ${{env.preprodResourceGroup}} \
+          --template-file ${{env.ARMTEMPLATE_PRODUCT}} \
+          --parameters ${{env.PARAMETERSFILEPRODUCT_NONPROD}} \
+          --query 'properties.outputs.logicAppUrl.value' -o tsv)" >> $GITHUB_ENV
+
+          
+      - name: Log Out From Azure
+        run: az logout
+
+  deploy-to-production:
+    name: Deploy to Production
+    needs: deploy-to-nonproduction
+    runs-on: ubuntu-latest
+
+    environment:
+      name: DEPLOY_PROD
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Log In To Azure
+        uses: Azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS_PROD}}
+      
+      - name: Validate Deployment of APIM ARM Template to Prod
+        shell: bash
+        run: |
+         az deployment group validate \
+         --resource-group ${{env.prodResourceGroup}} \
+         --mode Incremental \
+         --template-file ${{env.ARMTEMPLATE_PRODUCT}} \
+         --parameters ${{env.PARAMETERSFILEPRODUCT_PROD}}
+
+      - name: Deploy APIM ARM Template to Prod
+        shell: bash
+        run: |
+          echo "LOGICAPPURL1=$(az deployment group create \
+          -g ${{env.prodResourceGroup}} \
+          --template-file ${{env.ARMTEMPLATE_PRODUCT}} \
+          --parameters ${{env.PARAMETERSFILEPRODUCT_PROD}} \
+          --query 'properties.outputs.logicAppUrl.value' -o tsv)" >> $GITHUB_ENV
+
+          
+      - name: Log Out From Azure
+        run: az logout

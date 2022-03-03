@@ -1,0 +1,198 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  buildConfiguration: 'Release'
+  # Azure Resource Manager connection created during pipeline creation
+  prodAzureSubscription: 'FMG Application Integration Production (6616f88d-b95d-4a2a-9a4b-d8f077109a53)'
+  preprodAzureSubscription: 'FMG Application Integration Non Production (fa400d27-a461-4c49-b43e-f7f143d8adf1)'
+  #prodAzureSubscription: 'FMG Application Integration Development'
+  #preprodAzureSubscription: 'FMG Application Integration Development'
+  devAzureSubscription: 'FMG Application Integration Development'
+
+    # Azure subscription ID
+  prodAzureSubscriptionId: '6616f88d-b95d-4a2a-9a4b-d8f077109a53'
+  preprodAzureSubscriptionId: 'fa400d27-a461-4c49-b43e-f7f143d8adf1'
+  #prodAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  #preprodAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+  devAzureSubscriptionId: '0e70bfc1-52f6-4131-b55c-36a1c0db8598'
+
+  # Resource Group name
+  prodResourceGroup: 'fzanzaipdrgp002'
+  preprodResourceGroup: 'fzanzainprgp002'
+  #prodResourceGroup: 'fzanzaidvrgp002'
+  #preprodResourceGroup: 'fzanzaidvrgp002'
+  devResourceGroup: 'fzanzaidvrgp002'
+
+  # Agent VM image name
+  vmImageName: 'windows-latest'
+
+  # Working Directory
+  workingDirectory: '$(System.DefaultWorkingDirectory)/fmgclaimfilethreatdetection'
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+
+stages:
+- stage: Build
+  displayName: Build APIM stage
+
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+
+    steps:
+    - task: NuGetToolInstaller@1
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+    
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+    #- task: PublishBuildArtifacts@1
+    #  displayName: 'Publish Postman Collection'
+    #  inputs:
+    #    PathtoPublish: '$(Build.SourcesDirectory)/PostmanCollection'
+    #    ArtifactName: 'PostmanCollection'
+    #    publishLocation: 'Container'
+        
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: DeployDEV
+  displayName: Deploy APIM to Development
+  dependsOn: Build
+  condition: succeeded()
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to Development
+    environment: 'development'    
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: drop
+              path: $(Build.ArtifactStagingDirectory)
+
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: 'APIM endpoint for Opswat file scanner'
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: '$(devAzureSubscription)'
+              subscriptionId: '$(devAzureSubscriptionId)'
+              action: 'Create Or Update Resource Group'
+              resourceGroupName: '$(devResourceGroup)'
+              location: 'Australia Southeast'
+              templateLocation: 'Linked artifact'
+              csmFile: '$(Pipeline.Workspace)\drop\APIMEndpoints\fmg-apim002-opswat-api.template.json'
+              csmParametersFile: '$(Pipeline.Workspace)\drop\APIMEndpoints\fmg-apim002-opswat-parameters.DEV.json'
+              deploymentMode: 'Incremental'
+
+          #- task: Npm@1
+          #  displayName: 'install npm'
+          #  inputs:
+          #    command: custom
+          #    workingDir: '$(System.DefaultWorkingDirectory)'
+          #    verbose: false
+          #    customCommand: 'install -g newman'
+
+          #- task: Npm@1
+          #  displayName: 'npm install html'
+          #  inputs:
+          #    command: custom
+          #    workingDir: '$(System.DefaultWorkingDirectory)'
+          #    verbose: false
+          #    customCommand: 'install -g newman-reporter-htmlextra '
+
+          #- script: 'newman run $(Pipeline.Workspace)/PostmanCollection/APIM.postman_collection.json -r htmlextra --reporters cli,junit,json,htmlextra --reporter-junit-export junitReport.xml --reporter-htmlextra-export PostmanReport.html'
+          #  displayName: 'Run test with report'
+
+          #- task: UploadPostmanHtmlReport@1
+          #  displayName: 'Upload Postman Html Report'
+          #  inputs:
+          #    cwd: '$(System.DefaultWorkingDirectory)'
+
+- stage: DeployNONPROD
+  displayName: Deploy APIM to NONPROD
+  dependsOn: Build
+  condition: succeeded()
+  
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to NonProduction
+    environment: 'preproduction'
+    
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+              - task: AzureResourceManagerTemplateDeployment@3
+                displayName: 'APIM endpoint for Opswat file scanner'
+                inputs:
+                  deploymentScope: 'Resource Group'
+                  azureResourceManagerConnection: '$(preprodAzureSubscription)'
+                  subscriptionId: '$(preprodAzureSubscriptionId)'
+                  action: 'Create Or Update Resource Group'
+                  resourceGroupName: '$(preprodResourceGroup)'
+                  location: 'Australia Southeast'
+                  templateLocation: 'Linked artifact'
+                  csmFile: '$(Pipeline.Workspace)\drop\APIMEndpoints\fmg-apim002-opswat-api.template.json'
+                  csmParametersFile: '$(Pipeline.Workspace)\drop\APIMEndpoints\fmg-apim002-opswat-parameters.NONPROD.json'
+                  deploymentMode: 'Incremental'
+
+ 
+- stage: DeployPROD
+  displayName: Deploy APIM to PROD
+  dependsOn: Build
+  condition: succeeded()
+  
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to Production
+    environment: 'production'
+    
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+              - task: AzureResourceManagerTemplateDeployment@3
+                displayName: 'APIM endpoint for Opswat file scanner'
+                inputs:
+                  deploymentScope: 'Resource Group'
+                  azureResourceManagerConnection: '$(prodAzureSubscription)'
+                  subscriptionId: '$(prodAzureSubscriptionId)'
+                  action: 'Create Or Update Resource Group'
+                  resourceGroupName: '$(prodResourceGroup)'
+                  location: 'Australia Southeast'
+                  templateLocation: 'Linked artifact'
+                  csmFile: '$(Pipeline.Workspace)\drop\APIMEndpoints\fmg-apim002-opswat-api.template.json'
+                  csmParametersFile: '$(Pipeline.Workspace)\drop\APIMEndpoints\fmg-apim002-opswat-parameters.PROD.json'
+                  deploymentMode: 'Incremental'
