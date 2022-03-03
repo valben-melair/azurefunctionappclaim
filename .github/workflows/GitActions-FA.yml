@@ -75,8 +75,8 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ github.workspace }}/coverage/Api.xml
-          directory: ${{ github.workspace }}/coverage/
+          files: D:\\a\\azurefunctionappclaim\\azurefunctionappclaim\\coverage\\Api.xml
+          directory: D:\\a\\azurefunctionappclaim\\azurefunctionappclaim\\coverage
 
         # Execute report generator
       - name: Execute report generator
@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
            name: artifactsCodeCov
-           path: fmgclaimfilethreatdetection\\coverage
+           path: ${{ github.workspace }}/coverage/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
