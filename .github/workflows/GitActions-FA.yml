@@ -79,6 +79,7 @@ jobs:
           directory: D:\\a\\azurefunctionappclaim\\azurefunctionappclaim\\coverage
           flags: unittests
           fail_ci_if_error: true
+          yml: D:\\a\\azurefunctionappclaim\\codecov.yml
 
         # Execute report generator
       - name: Execute report generator
