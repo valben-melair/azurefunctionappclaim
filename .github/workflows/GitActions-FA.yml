@@ -75,9 +75,8 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          #files: D:\\a\\azurefunctionappclaim\\azurefunctionappclaim\\coverage\\Api.xml
+          files: D:\\a\\azurefunctionappclaim\\azurefunctionappclaim\\coverage\\Api.xml
           directory: D:\\a\\azurefunctionappclaim\\azurefunctionappclaim\\coverage
-          flags: unittests
           fail_ci_if_error: true
           yml: D:\\a\\azurefunctionappclaim\\codecov.yml
 
