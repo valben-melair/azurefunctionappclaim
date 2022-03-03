@@ -58,7 +58,7 @@ jobs:
 
       - name: Unit Tests and collect coverage
         run: |
-            dotnet test  ClaimFilesThreatDetection.sln --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+            dotnet test  ClaimFilesThreatDetection.sln --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutput=${{ github.workspace }}/coverage/Api.xml  /p:CoverletOutputFormat=opencover
             #dir ./fmgclaimfilethreatdetection
             #dir ./fmgclaimfilethreatdetection/UnitTests
             #dir ./fmgclaimfilethreatdetection/UnitTests/TestResults
@@ -70,10 +70,12 @@ jobs:
             #echo "./fmgclaimfilethreatdetection/UnitTests/TestResults/$dirList/coverage.cobertura.xml"
             #echo "./fmgclaimfilethreatdetection/UnitTests/TestResults/$dirList/coverage.cobertura.xml" > TestFolderName
 
-      #- name: Upload Coverage to Codecov
-      #  uses: codecov/codecov-action@v1
-      #  with:
-      #    file: "${{env.TestFolderName}}"
+      - name: Publish Business Project coverage report to codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ github.workspace }}/coverage/*.xml
+          directory: ${{ github.workspace }}/coverage/
 
         # Execute report generator
       - name: Execute report generator
