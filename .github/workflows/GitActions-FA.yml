@@ -95,6 +95,12 @@ jobs:
             cd coveragereport
             copy badge_linecoverage.svg $curDir
 
+      - name: Upload codecov
+        uses: actions/upload-artifact@v2
+        with:
+           name: artifactsCodeCov
+           path: fmgclaimfilethreatdetection\\coverage
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
