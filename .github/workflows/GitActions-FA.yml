@@ -75,8 +75,8 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ github.workspace }}/coverage/*.xml
-          directory: ${{ github.workspace }}/coverage/
+          files: ${{ github.workspace }}\\coverage\\*.xml
+          directory: ${{ github.workspace }}\\coverage\\
 
         # Execute report generator
       - name: Execute report generator
