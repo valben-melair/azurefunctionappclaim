@@ -59,6 +59,7 @@ jobs:
       - name: Unit Tests and collect coverage
         run: |
             dotnet test  ClaimFilesThreatDetection.sln --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutput=${{ github.workspace }}/coverage/Api.xml  /p:CoverletOutputFormat=opencover
+            dir  ${{ github.workspace }}/coverage/
             #dir ./fmgclaimfilethreatdetection
             #dir ./fmgclaimfilethreatdetection/UnitTests
             #dir ./fmgclaimfilethreatdetection/UnitTests/TestResults
