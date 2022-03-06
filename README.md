@@ -4,6 +4,16 @@
 
 [![Coverage](https://raw.githubusercontent.com/valbengalon/azurefunctionappclaim/main/coverage/badge_linecoverage.svg)](https://htmlpreview.github.io/?https://raw.githubusercontent.com/valbengalon/azurefunctionappclaim/main/coverage/index.html)
 
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=bugs)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim)
+
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim)
+
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=coverage)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim)
+
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim) 
+
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim) 
+
 Azure Function Apps Badge <br>
 ![FA workflow](https://github.com/valbengalon/azurefunctionappclaim/actions/workflows/GitActions-FA.yml/badge.svg)
 
