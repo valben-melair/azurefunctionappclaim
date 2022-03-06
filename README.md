@@ -12,7 +12,7 @@
 
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim) 
 
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim) 
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim)  
 
 Azure Function Apps Badge <br>
 ![FA workflow](https://github.com/valbengalon/azurefunctionappclaim/actions/workflows/GitActions-FA.yml/badge.svg)
