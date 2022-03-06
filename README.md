@@ -10,7 +10,7 @@
 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=coverage)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim)
 
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim) 
 
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim) 
 
