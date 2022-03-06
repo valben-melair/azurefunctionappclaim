@@ -93,7 +93,8 @@ jobs:
             $ExcludeList += ";-" + $nmspc + ".Models.MessageBoxWrapper"
             $ExcludeList += ";-" + $nmspc + ".Services.Run.RunDialog"
             reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:Badges "-classfilters:$ExcludeList"
-            reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:Html "-classfilters:$ExcludeList"
+            reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:HtmlInline "-classfilters:$ExcludeList"
+            reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:Cobertura "-classfilters:$ExcludeList"
             cd coveragereport
             copy badge_linecoverage.svg $curDir
 
