@@ -17,11 +17,12 @@ Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "APIMEndpoints", "APIMEndpoi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{784ED950-E3D2-4E64-B994-8FFF34430D24}"
 	ProjectSection(SolutionItems) = preProject
+		coverage\badge_linecoverage.svg = coverage\badge_linecoverage.svg
 		.github\workflows\GitActions-APIM.yml = .github\workflows\GitActions-APIM.yml
 		.github\workflows\GitActions-FA.yml = .github\workflows\GitActions-FA.yml
 		.github\workflows\GitActions-TestAzureLogin.yml = .github\workflows\GitActions-TestAzureLogin.yml
-		coverage\badge_linecoverage.svg = coverage\badge_linecoverage.svg
 		coverage\index.html = coverage\index.html
+		.github\workflows\Sonar.yml = .github\workflows\Sonar.yml
 	EndProjectSection
 EndProject
 Global
