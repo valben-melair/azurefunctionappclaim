@@ -4,6 +4,8 @@
 
 [![Coverage](https://raw.githubusercontent.com/valbengalon/azurefunctionappclaim/main/coverage/badge_linecoverage.svg)](https://htmlpreview.github.io/?https://raw.githubusercontent.com/valbengalon/azurefunctionappclaim/main/coverage/index.html)
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=valbengalon_azurefunctionappclaim&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=valbengalon_azurefunctionappclaim)
+
 Azure Function Apps Badge <br>
 ![FA workflow](https://github.com/valbengalon/azurefunctionappclaim/actions/workflows/GitActions-FA.yml/badge.svg)
 
