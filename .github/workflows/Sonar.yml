@@ -18,9 +18,6 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
-      - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v1
-
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
@@ -41,9 +38,8 @@ jobs:
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
 
-      - name: Restore NuGet packages
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+      - name: Test
+        run: dotnet test  ClaimFilesThreatDetection.sln --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutput=${{ github.workspace }}/coverage/Api.xml  /p:CoverletOutputFormat=opencover
 
       - name:  Start SonarCloud Analysis
         env:
@@ -51,18 +47,13 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"valbengalon_azurefunctionappclaim" /o:"valbengalon" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"valbengalon_azurefunctionappclaim" /o:"valbengalon" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/*.xml" -d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx"
+          dotnet build ClaimFilesThreatDetection.sln --configuration Release
           #dotnet build ClaimFilesThreatDetection.sln -p:Configuration=Release --no-restore --output ./output
-          #.\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
-      - name: MSBuild
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        shell: powershell
-        run: |
-            msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
-        
-      - name: Stop SonarScanner Analysis
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      #- name: Stop SonarScanner Analysis
+      #  env:
+      #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+      #      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #  run: .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
