@@ -49,11 +49,5 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"valbengalon_azurefunctionappclaim" /o:"valbengalon" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/*.xml" -d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx"
           dotnet build ClaimFilesThreatDetection.sln --configuration Release
-          #dotnet build ClaimFilesThreatDetection.sln -p:Configuration=Release --no-restore --output ./output
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
-      #- name: Stop SonarScanner Analysis
-      #  env:
-      #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-      #      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #  run: .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"

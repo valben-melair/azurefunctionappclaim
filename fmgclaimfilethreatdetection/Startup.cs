@@ -17,7 +17,5 @@ namespace FMG.ClaimFileUpload
                                 (sender, certificate, chain, errors) => { return true; }
                     });
         }
-
-
     }
 }
