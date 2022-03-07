@@ -2,7 +2,7 @@ name: Sonar Cloud - Branch Analysis
 on:
   push:
     branches:
-    - master
+    - main
     - develop
   workflow_dispatch:
 env:
