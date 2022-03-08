@@ -10,7 +10,7 @@ namespace FMGClaimFile.Upload.Opswat
 {
     public class Scan
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
         private readonly ILogger _log;
 
         public Scan(HttpClient httpClient, ILogger log) 
@@ -25,7 +25,6 @@ namespace FMGClaimFile.Upload.Opswat
             try
             {
                 _log.LogInformation("AnalyzeFile -- started");
-                //var methodType = "POST";
                 var opswatPostAnalylzeUrl = $"{opswatUrl}file";
 #if DEBUG
                 opswatPostAnalylzeUrl = "https://api.metadefender.com/v4/file";
