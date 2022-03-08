@@ -135,7 +135,6 @@ namespace FMGClaimFile.Upload.AzureFileService
                     {
                         if (!item.IsDirectory)
                         {
-                            //fileName = item.Name;
                             var fileClient = fileDirectoryClient.GetFileClient(item.Name);
                             CloudFile cloudFile = new CloudFile(fileClient.Uri);
 
