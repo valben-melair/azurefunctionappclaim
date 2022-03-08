@@ -95,8 +95,6 @@ namespace FMGClaimFile.Upload.AzureFileService
                         Stream fileStream = new MemoryStream();
                         fileStream.Position = 0;
 
-                        // Setup the number of the concurrent operations
-                        //TransferManager.Configurations.ParallelOperations = 2;
                         await TransferManager.DownloadAsync(cloudFile, fileStream).ConfigureAwait(false);
 
                         byte[] fileArray = new byte[fileStream.Length];
