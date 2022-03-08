@@ -58,7 +58,7 @@ namespace FMGClaimFile.Upload.Opswat
             catch (Exception ex)
             {
                 _log.LogError($"AnalyzeFile failed: { ex.Message } \n { ex.StackTrace }", ex);
-                throw new Exception(ex.Message);
+                throw new ArgumentNullException(ex.Message);
             }
         }
 
@@ -99,7 +99,7 @@ namespace FMGClaimFile.Upload.Opswat
             catch (Exception ex)
             {
                 _log.LogError($"GetResult failed: { ex.Message } \n { ex.StackTrace }", ex);
-                throw new Exception(ex.Message);
+                throw new ArgumentNullException(ex.Message);
             }
             finally
             {
@@ -141,7 +141,7 @@ namespace FMGClaimFile.Upload.Opswat
             catch (Exception ex)
             {
                 _log.LogError($"HashLookup failed: { ex.Message } \n { ex.StackTrace }", ex);
-                throw new Exception(ex.Message);
+                throw new ArgumentNullException(ex.Message);
             }
         }
     }

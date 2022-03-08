@@ -53,7 +53,7 @@ namespace FMGClaimFile.Upload.AzureFileService
             catch (Exception ex)
             {
                 _log.LogError(ex.Message, null);
-                throw new Exception(ex.Message);
+                throw new ArgumentNullException(ex.Message);
             }
         }
 
@@ -70,7 +70,7 @@ namespace FMGClaimFile.Upload.AzureFileService
             catch (Exception ex)
             {
                 _log.LogError(ex.Message, null);
-                throw new Exception(ex.Message);
+                throw new ArgumentNullException(ex.Message);
             }
         }
 
@@ -117,7 +117,7 @@ namespace FMGClaimFile.Upload.AzureFileService
             catch(Exception ex)
             {
                 _log.LogError(ex.Message, null);
-                throw new Exception(ex.Message);
+                throw new ArgumentNullException(ex.Message);
             }
         }
 
@@ -151,7 +151,7 @@ namespace FMGClaimFile.Upload.AzureFileService
             catch(Exception ex)
             {
                 _log.LogError(ex.Message, null);
-                throw new Exception(ex.Message);
+                throw new ArgumentNullException(ex.Message);
             }
         }
  

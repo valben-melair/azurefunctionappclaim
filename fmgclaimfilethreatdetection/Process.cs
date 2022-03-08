@@ -141,7 +141,7 @@ namespace FMG.ClaimFileUpload
                     var FileFolder = $"scanned/{ClaimNumber}/{DocumentID}";
                     await azureFile.RemoveFile(FileFolder).ConfigureAwait(false);
 
-                    throw new Exception(scanResultVal.ToString());
+                    throw new ArgumentNullException(scanResultVal.ToString());
                 }
 
                 HttpResponseMessage httpResponseMessage = new(HttpStatusCode.OK) { Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json") };
