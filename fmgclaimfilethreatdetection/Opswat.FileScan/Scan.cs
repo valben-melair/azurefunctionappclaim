@@ -77,7 +77,6 @@ namespace FMGClaimFile.Upload.Opswat
 #if DEBUG
                 opswatGetFileUrl = $"https://api.metadefender.com/v4/file/{id}";
 #endif
-                //var opswatGetFileUrl = $"https://devapi.npfmgservices.fmg.net/opswat/file/{id}";
                 while (progressPercentage < 100)
                 {
                     var response = await _httpClient.GetAsync(opswatGetFileUrl).ConfigureAwait(false);
