@@ -22,3 +22,5 @@ APIM Badge <br>
 
 Test azure connection badge <br>
 ![Test workflow](https://github.com/valbengalon/azurefunctionappclaim/actions/workflows/GitActions-TestAzureLogin.yml/badge.svg)
+
+[![Sonar Cloud - Branch Analysis](https://github.com/valbengalon/azurefunctionappclaim/actions/workflows/Sonar.yml/badge.svg)](https://github.com/valbengalon/azurefunctionappclaim/actions/workflows/Sonar.yml)
